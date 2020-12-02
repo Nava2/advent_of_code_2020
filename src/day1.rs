@@ -39,8 +39,6 @@ pub fn solve_part2(input: &[i32]) -> i32 {
     
     let v_len = possible_values.len();
 
-    println!("v_len = {}", &v_len);
-
     let memoized: Vec<Vec<i32>> = (0..(v_len - 2))
         .into_iter()
         .map(|i| {            
