@@ -1,12 +1,12 @@
 [package]
-name = "advent-of-code-2015"
+name = "advent_of_code_2020"
 version = "0.1.0"
-authors = ["Grégory Obanos <gregory.obanos@gmail.com>"]
+authors = ["Kevin Brightwell <kevin.brightwell2@gmail.com>"]
 
 [lib]
 bench = false
 
 [dependencies]
 rust-crypto = "0.2.36"
-aoc-runner = "0.1.0"
-aoc-runner-derive = "0.1.0"
+aoc-runner = "0.3.0"
+aoc-runner-derive = "0.3.0"
