@@ -7,6 +7,5 @@ authors = ["Kevin Brightwell <kevin.brightwell2@gmail.com>"]
 bench = false
 
 [dependencies]
-rust-crypto = "0.2.36"
 aoc-runner = "0.3.0"
 aoc-runner-derive = "0.3.0"

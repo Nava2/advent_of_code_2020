@@ -1,43 +1,39 @@
-#[aoc(day1, part1, Bytes)]
-pub fn part1_bytes(input: &[u8]) -> i32 {
-    input.iter().fold(0, |sum, c| match c {
-        b'(' => sum + 1,
-        b')' => sum - 1,
-        _ => unreachable!(),
-    })
+#[aoc_generator(day1)]
+pub fn input_generator(input: &str) -> Vec<i32> {
+    input
+        .lines()
+        .map(|line| {
+            line.parse::<i32>().unwrap()
+        })
+        .collect()
 }
 
-#[aoc(day1, part1, Chars)]
-pub fn part1_chars(input: &str) -> i32 {
-    input.chars().fold(0, |sum, c| match c {
-        '(' => sum + 1,
-        ')' => sum - 1,
-        _ => unreachable!(),
-    })
-}
+const TARGET_VALUE: i32 = 2020;
 
-#[aoc(day1, part2)]
-pub fn part2(input: &str) -> usize {
-    let mut sum: u32 = 0;
+#[aoc(day1, part1)]
+pub fn solve_part1(input: &[i32]) -> i32 {
+    let possible_values: Vec<&i32> = input
+        .iter()
+        .filter(|&x| x <= &TARGET_VALUE)
+        .collect();
 
-    for (i, c) in input.as_bytes().iter().enumerate() {
-        match c {
-            b'(' => sum += 1,
-            b')' => if let Some(s) = sum.checked_sub(1) {
-                sum = s;
-            } else {
-                return i + 1;
-            },
-            _ => unreachable!(),
+    for i0 in 0..(possible_values.len() - 1) {
+        for i1 in (i0+1)..possible_values.len() {
+            let v0 = possible_values[i0];
+            let v1 = possible_values[i1];
+            if v0 + v1 == TARGET_VALUE {
+                return v0 * v1;
+            }
         }
     }
 
     unreachable!()
 }
 
+/*
 #[cfg(test)]
 mod tests {
-    use super::{part1_chars as part1, part2};
+    use super::{solve_part1 as part1};
 
     // (()) and ()() both result in floor 0.
     #[test]
@@ -84,4 +80,4 @@ mod tests {
     fn sample7() {
         assert_eq!(part2("()())"), 5);
     }
-}
+} */
