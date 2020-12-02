@@ -53,11 +53,15 @@ pub fn solve_part2(input: &[i32]) -> i32 {
 
     for i0 in 0..(v_len - 2) {
         for i1 in (i0+1)..(v_len - 1) {
+            let v_zero_one = memoized[i0][i1 - i0 - 1];
+            if v_zero_one > TARGET_VALUE {
+                continue;
+            }
+
             for i2 in (i1+1)..v_len {
-                let v_zero_one = memoized[i0][i1 - i0 - 1];
                 let v2 = possible_values[i2];
                 if v_zero_one + v2 == TARGET_VALUE {
-                    return possible_values[i0] * possible_values[i1]  * v2;
+                    return possible_values[i0] * possible_values[i1] * v2;
                 }
             }
         }
