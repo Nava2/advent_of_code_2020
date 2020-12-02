@@ -30,54 +30,40 @@ pub fn solve_part1(input: &[i32]) -> i32 {
     unreachable!()
 }
 
-/*
-#[cfg(test)]
-mod tests {
-    use super::{solve_part1 as part1};
+#[aoc(day1, part2)]
+pub fn solve_part2(input: &[i32]) -> i32 {
+    let possible_values: Vec<&i32> = input
+        .iter()
+        .filter(|&x| x <= &TARGET_VALUE)
+        .collect();
+    
+    let v_len = possible_values.len();
 
-    // (()) and ()() both result in floor 0.
-    #[test]
-    fn sample1() {
-        assert_eq!(part1("(())"), 0);
-        assert_eq!(part1("()()"), 0);
+    println!("v_len = {}", &v_len);
+
+    let memoized: Vec<Vec<i32>> = (0..(v_len - 2))
+        .into_iter()
+        .map(|i| {            
+            let current = *possible_values[i];
+            possible_values.iter()
+                .take(v_len - 1)
+                .skip(i + 1)
+                .map(|v1| *v1 + current)
+                .collect()
+        })
+        .collect();
+
+    for i0 in 0..(v_len - 2) {
+        for i1 in (i0+1)..(v_len - 1) {
+            for i2 in (i1+1)..v_len {
+                let v_zero_one = memoized[i0][i1 - i0 - 1];
+                let v2 = possible_values[i2];
+                if v_zero_one + v2 == TARGET_VALUE {
+                    return possible_values[i0] * possible_values[i1]  * v2;
+                }
+            }
+        }
     }
 
-    // ((( and (()(()( both result in floor 3.
-    #[test]
-    fn sample2() {
-        assert_eq!(part1("((("), 3);
-        assert_eq!(part1("(()(()("), 3);
-    }
-
-    // ))((((( also results in floor 3.
-    #[test]
-    fn sample3() {
-        assert_eq!(part1("))((((("), 3);
-    }
-
-    // ()) and ))( both result in floor -1 (the first basement level).
-    #[test]
-    fn sample4() {
-        assert_eq!(part1("())"), -1);
-        assert_eq!(part1("))("), -1);
-    }
-
-    // ))) and )())()) both result in floor -3.
-    #[test]
-    fn sample5() {
-        assert_eq!(part1(")))"), -3);
-        assert_eq!(part1(")())())"), -3);
-    }
-
-    // ) causes him to enter the basement at character position 1.
-    #[test]
-    fn sample6() {
-        assert_eq!(part2(")"), 1);
-    }
-
-    // ()()) causes him to enter the basement at character position 5.
-    #[test]
-    fn sample7() {
-        assert_eq!(part2("()())"), 5);
-    }
-} */
+    unreachable!()
+}
