@@ -1,17 +1,17 @@
 use std::collections::HashSet;
 
 #[aoc_generator(day6)]
-pub fn input_generator(input: &str) -> Vec<Vec<char>> {
-    let mut result = Vec::<Vec<char>>::new();
+pub fn input_generator(input: &str) -> Vec<Vec<Vec<char>>> {
+    let mut result = Vec::<Vec<Vec<char>>>::new();
 
-    let mut current_group = Vec::<char>::new();
+    let mut current_group = Vec::<Vec<char>>::new();
     for line in input.lines() {
         if line.chars().count() == 0 {
             result.push(current_group);
             current_group = Vec::new();
         }
 
-        line.chars().for_each(|c| { current_group.push(c); });
+        current_group.push(line.chars().collect());
     }
 
     result.push(current_group);
@@ -19,10 +19,15 @@ pub fn input_generator(input: &str) -> Vec<Vec<char>> {
 }
 
 #[aoc(day6, part1)]
-pub fn solve_part1(groups: &[Vec<char>]) -> usize {
+pub fn solve_part1(groups: &[Vec<Vec<char>>]) -> usize {
     groups.iter()
-        .map(|g| g.iter().cloned().collect::<HashSet<char>>().len())
+        .map(|g| g.iter().cloned().flatten().collect::<HashSet<char>>().len())
         .sum()
+}
+
+#[aoc(day6, part2)]
+pub fn solve_part2(groups: &[Vec<Vec<char>>]) -> usize {
+    panic!()
 }
 
 #[cfg(test)]
