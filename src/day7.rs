@@ -200,11 +200,8 @@ mod tests {
             faded blue bags contain no other bags.\n\
             dotted black bags contain no other bags.";
 
-        let rules = input_generator(input);
-        for (i, (color, rule)) in rules.iter().enumerate() {
-            println!("{:>3} {:?} -> {:?}", i, color, rule);
-        }
 
+        let rules = input_generator(input);
         let valid_bags = compute_valid_bags(&rules);
 
         assert_eq!(
@@ -226,10 +223,6 @@ mod tests {
         dark violet bags contain no other bags.";
 
         let rules = input_generator(input);
-        for (i, (color, rule)) in rules.iter().enumerate() {
-            println!("{:>3} {:?} -> {:?}", i, color, rule);
-        }
-
         assert_eq!(solve_part2(&rules), 126);
     }
 }
