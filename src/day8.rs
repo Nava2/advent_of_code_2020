@@ -34,6 +34,7 @@ impl Instruction {
     }
 }
 
+#[derive(Clone)]
 struct Cpu {
     acc: i32,
     ptr: i32,
@@ -70,23 +71,105 @@ pub fn input_generator(input: &str) -> Vec<Instruction> {
         .collect()
 }
 
+enum ExecuteResult {
+    Looped(i32),
+    Completed(i32),
+    Failed,
+}
+
+fn run_cpu(program: &[Instruction], cpu: &mut Cpu, instruction_record: &mut [bool]) -> ExecuteResult {
+    while let Some(u_ptr) = cpu.u_ptr() {
+        if u_ptr == program.len() {
+            return ExecuteResult::Completed(cpu.acc)
+        }
+        
+        if instruction_record[u_ptr] {
+            return ExecuteResult::Looped(cpu.acc)
+        }
+
+        instruction_record[u_ptr] = true;
+
+        cpu.execute(&program[u_ptr]);
+    }
+
+    ExecuteResult::Failed
+}
+
 #[aoc(day8, part1)]
 pub fn solve_part1(instructions: &[Instruction]) -> i32 {
     let mut cpu = Cpu { acc: 0, ptr: 0 };
 
     let mut instruction_record = vec![false; instructions.len()];
 
-    while let Some(u_ptr) = cpu.u_ptr() {
+    match run_cpu(instructions, &mut cpu, &mut instruction_record) {
+        ExecuteResult::Looped(v) | ExecuteResult::Completed(v) => v,
+        ExecuteResult::Failed => panic!("Failed to execute?"),
+    }
+}
+
+#[aoc(day8, part2)]
+pub fn solve_part2(instructions: &[Instruction]) -> i32 {
+    let cpu = Cpu { acc: 0, ptr: 0 };
+
+    let instruction_record = vec![false; instructions.len()];
+
+    fn descend(program: &[Instruction], instruction_record: &[bool], cpu: &Cpu, can_mutate: bool) -> Option<i32> {
+        let u_ptr = cpu.u_ptr()?;
+
+        if u_ptr == program.len() {
+            // exit condition
+            return Some(cpu.acc);
+        }
+    
         if instruction_record[u_ptr] {
-            break;
+            return None;
         }
 
+        let ins = &program[u_ptr];
+
+        // if we already mutated the code in some way, we can't mutate anymore so just execute the program going forwards.
+        if !can_mutate {
+            return match run_cpu(program, &mut cpu.clone(), &mut instruction_record.to_vec()) {
+                ExecuteResult::Completed(v) => Some(v),
+                _ => None,
+            }
+        }
+
+        let mut instruction_record = instruction_record.to_vec();
         instruction_record[u_ptr] = true;
 
-        cpu.execute(&instructions[u_ptr]);
+        let mutated = match ins {
+            Instruction::ACC(_) => vec![(can_mutate, program.to_vec())],
+            Instruction::JMP(v) | Instruction::NOP(v) => {
+                // create two parallel executions w/ the instruction swapped for one
+                fn mutate_program(program: &[Instruction], loc: usize, ins: Instruction) -> Vec<Instruction> {
+                    let mut program = program.to_vec();
+                    program[loc] = ins;
+                    program
+                }
+
+                let with_jmp = mutate_program(program, u_ptr, Instruction::JMP(*v));
+                let with_nop = mutate_program(program, u_ptr, Instruction::NOP(*v));
+
+                vec![
+                    (*ins == Instruction::JMP(*v), with_jmp),
+                    (*ins == Instruction::NOP(*v), with_nop),
+                ]
+            },
+        };
+        
+        mutated.into_iter()
+            .map(|(can_mutate, program)| {
+                let mut cpu = cpu.clone();
+                cpu.execute(&program[cpu.u_ptr()?]);
+
+                descend(&program, &instruction_record, &cpu, can_mutate)
+            })
+            .flatten()
+            .next()
     }
 
-    cpu.acc
+    descend(instructions, &instruction_record, &cpu, true).unwrap()
 }
 
 
@@ -144,5 +227,24 @@ mod tests {
         let acc_value = solve_part1(&instructions);
 
         assert_eq!(5, acc_value); // provided
+    }
+
+    #[test]
+    fn given_input_part2() {
+        let input = "nop +0\n\
+                    acc +1\n\
+                    jmp +4\n\
+                    acc +3\n\
+                    jmp -3\n\
+                    acc -99\n\
+                    acc +1\n\
+                    jmp -4\n\
+                    acc +6";
+
+        let program = input_generator(input);
+
+        let acc_value = solve_part2(&program);
+
+        assert_eq!(8, acc_value); // provided
     }
 }
