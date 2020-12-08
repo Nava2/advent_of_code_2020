@@ -33,7 +33,6 @@ pub fn solve_part1(groups: &[Vec<Vec<char>>]) -> usize {
 
 #[aoc(day6, part2)]
 pub fn solve_part2(groups: &[Vec<Vec<char>>]) -> usize {
-    let all_chars_set = ('a'..'z').collect::<HashSet<char>>();
     groups.iter()
         .map(|group| {
             let group = group.iter()
@@ -61,12 +60,8 @@ mod tests {
     #[test]
     fn input_parsing() {
         assert_eq!(
-            input_generator("abc")[0], vec![
-                'a', 'b', 'c'
-            ].into_iter().collect::<HashSet<char>>());
+            input_generator("abc")[0], vec![vec!['a', 'b', 'c']]);
         assert_eq!(
-            input_generator("ac\nb\n\n")[0], vec![
-                'a', 'b', 'c'
-            ].into_iter().collect::<HashSet<char>>());
+            input_generator("ac\nb\n\n")[0], vec![vec!['a', 'c'], vec!['b']]);
     }
 }
