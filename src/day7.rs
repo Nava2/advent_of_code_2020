@@ -1,5 +1,5 @@
 use std::collections::{ HashMap, HashSet, VecDeque };
-use std::cell::{RefCell, RefMut};
+use std::cell::RefCell;
 use regex::Regex;
 
 /*
@@ -127,7 +127,6 @@ fn compute_valid_bags(rules: &HashMap<String, Rule>) -> HashSet<String> {
         }
     }
 
-    println!("Found {} answers = {:?}", valid_bags.len(), valid_bags);
     valid_bags
 }
 
