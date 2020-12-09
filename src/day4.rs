@@ -224,7 +224,7 @@ mod tests {
     use super::*;
 
     fn assert_validate_fail(field: PassportField, value: &str, error: &str) {
-        assert_eq!(field.validate(value), Err(error.to_string()));
+        assert_eq!(field.validate(value), Err(format!("{:?}: {}", field, error)));
     }
 
     fn assert_validate_success(field: PassportField, value: &str) {
