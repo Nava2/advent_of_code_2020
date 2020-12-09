@@ -5,14 +5,9 @@ pub fn input_generator(input: &str) -> Vec<usize> {
         .collect()
 }
 
-fn find_sum_slow(preamble: &[usize], n: &usize) -> bool {
-    let valid_numbers = preamble.iter()
-            .filter(|&p| p < n)
-            .cloned()
-            .collect::<Vec<_>>();
-
-    for left in valid_numbers.iter().take(valid_numbers.len() - 1) {
-        for right in valid_numbers.iter().skip(1) {
+fn find_sum(preamble: &[usize], n: &usize) -> bool {
+    for (i, left) in preamble.iter().enumerate().filter(|(_, l)| *l <= n) {
+        for right in preamble.iter().skip(i).filter(|r| *r <= n) {
             if left + right == *n {
                 return true;
             }
@@ -27,7 +22,7 @@ fn find_weak_value(encoded: &[usize], preamble_n: usize) -> Option<usize> {
         .map(|i| &encoded[i - preamble_n..i]);
 
     for (preamble, n) in preamble_iter.zip(encoded.iter().skip(preamble_n)) {
-        if !find_sum_slow(preamble, n) {
+        if !find_sum(preamble, n) {
             return Some(*n);
         }       
     }
@@ -41,11 +36,11 @@ pub fn solve_part1(encoded: &[usize]) -> usize {
 }
 
 fn find_contiguous_weak_sum(weak_value: &usize, encoded: &[usize]) -> Option<(usize, usize)> {
-    let valid_slices = encoded.iter().enumerate()
+    let valid_slices = encoded.iter()
+        .take(encoded.len() - 1)
+        .enumerate()
         .filter(|(_, v)| *v < weak_value)
-        .map(|(i, _)| &encoded[i..])
-        .filter(|slice| slice.len() >= 2)
-        .filter(|slice| slice[0] + slice[1] <= *weak_value);
+        .map(|(i, _)| &encoded[i..]);
 
     for slice in valid_slices {
         let mut current_sum = 0;
