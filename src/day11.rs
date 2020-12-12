@@ -1,5 +1,3 @@
-use std::fmt;
-
 #[derive(Clone, PartialEq)]
 pub enum Space {
     Floor,
@@ -8,31 +6,11 @@ pub enum Space {
 }
 
 impl Space {
-    fn as_char(&self) -> char {
-        match self {
-            Space::Floor => '.',
-            Space::Occupied => '#',
-            Space::Empty => 'L',
-        }
-    }
-
     fn is_unoccupied(&self) -> bool {
         match self {
             Space::Floor | Space::Empty => true,
             Space::Occupied => false,
         }
-    }
-}
-
-impl fmt::Debug for Space {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_char())
-    }
-}
-
-impl fmt::Display for Space {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_char())
     }
 }
 
