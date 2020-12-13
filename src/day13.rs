@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub struct BusNotes {
     first_timestamp: u32,
-    ids: Vec<u32>,
+    ids: Vec<Option<u32>>,
 }
 
 #[aoc_generator(day13)]
@@ -14,14 +14,23 @@ pub fn input_generator(input: &str) -> BusNotes {
     BusNotes {
         first_timestamp: lines[0].parse::<u32>().unwrap(),
         ids: lines[1].split(',')
-                .filter(|s| *s != "x")
-                .map(|s| s.parse::<u32>().unwrap())
+                .map(|s| {
+                    if s == "x" {
+                        None
+                    }
+                    else {
+                        Some(s.parse::<u32>().unwrap())
+                    }
+                })
                 .collect(),
     }
 }
 
 fn find_earliest_bus_time(bus_notes: &BusNotes) -> Option<(u32, u32)> {
-    let bus_ids = &bus_notes.ids;
+    let bus_ids = bus_notes.ids.iter()
+        .flatten()
+        .cloned()
+        .collect::<Vec<_>>();
     let first_timestamp = bus_notes.first_timestamp;
 
     let max_id = bus_ids.iter().max()?;
@@ -54,7 +63,16 @@ mod tests {
             bus_notes,
             BusNotes {
                 first_timestamp: 939,
-                ids: vec![7, 13, 59, 31, 19],
+                ids: vec![
+                    Some(7),
+                    Some(13),
+                    None,
+                    None,
+                    Some(59),
+                    None,
+                    Some(31),
+                    Some(19)
+                ],
             }
         );
     }
@@ -64,6 +82,6 @@ mod tests {
         let bus_notes = input_generator(GIVEN_INPUT_1);
         
         let earliest_time = find_earliest_bus_time(&bus_notes).unwrap();
-        assert_eq!(earliest_time, (59, 944));
+        assert_eq!(earliest_time, (59,944));
     }
 }
