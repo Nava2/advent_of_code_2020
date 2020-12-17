@@ -1,4 +1,3 @@
-use std::collections::VecDeque;
 use std::collections::HashMap;
 
 #[aoc_generator(day15)]
@@ -9,17 +8,52 @@ pub fn input_generator(input: &str) -> Vec<i64> {
         .collect()
 }
 
+#[derive(Clone, Debug)]
+struct PrevRun {
+    earliest: i64,
+    next: Option<i64>,
+}
+
+impl PrevRun {
+    fn new(first: i64) -> PrevRun {
+        PrevRun {
+            earliest: first,
+            next: None,
+        }
+    }
+
+    fn next_spoken(&self) -> i64 {
+        if let Some(next) = self.next {
+            next - self.earliest
+        }
+        else {
+            0
+        }
+    }
+
+    fn shift_next(&mut self, next_next: i64) {
+        if next_next == self.earliest {
+            return // nothing to shift
+        }
+
+        if let Some(next) = self.next {
+            self.earliest = next; // drop earliest
+            self.next = Some(next_next);
+        }
+        else {
+            self.next = Some(next_next);
+        }
+    }
+}
+
+
 fn part1_run(number_count: usize, turn_count: i64, starting_numbers: &[i64]) -> i64 {
-    let mut last_turn_spoken_map = HashMap::<i64, VecDeque<i64>>::new();
+    let mut last_turn_spoken_map = HashMap::<i64, PrevRun>::new();
     let mut last_spoken = 0;
     let mut turn = 0;
 
     for sn in starting_numbers.iter().map(|v| *v as i64) {
-        last_turn_spoken_map.insert(sn, { 
-            let mut r = VecDeque::with_capacity(2);
-            r.push_back(turn);
-            r
-        });
+        last_turn_spoken_map.insert(sn, PrevRun::new(turn));
         // println!("T{:>3} -> {}", turn + 1, sn);
 
         turn += 1;
@@ -32,12 +66,7 @@ fn part1_run(number_count: usize, turn_count: i64, starting_numbers: &[i64]) -> 
             // println!("T{:>3} -> prev={:?}", turn + 1, prev);
 
             // it was previously spoken
-            if prev.len() == 2 {
-                prev[1] - prev[0]
-            }
-            else {
-                0
-            }
+            prev.next_spoken()
         }
         else {
             0
@@ -45,11 +74,9 @@ fn part1_run(number_count: usize, turn_count: i64, starting_numbers: &[i64]) -> 
 
         // println!("T{:>3} -> last_spoken={}, speak={}", turn + 1, last_spoken, to_speak);
 
-        let last_spoken_entry = last_turn_spoken_map.entry(to_speak).or_insert_with(|| VecDeque::with_capacity(2));
-        last_spoken_entry.push_back(turn);
-        if last_spoken_entry.len() > 2 {
-            last_spoken_entry.pop_front();
-        }
+        last_turn_spoken_map.entry(to_speak)
+            .and_modify(|e| (*e).shift_next(turn))
+            .or_insert_with(|| PrevRun::new(turn));
 
         last_spoken = to_speak;
         turn += 1;
