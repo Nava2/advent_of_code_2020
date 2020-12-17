@@ -32,10 +32,6 @@ impl PrevRun {
     }
 
     fn shift_next(&mut self, next_next: i64) {
-        if next_next == self.earliest {
-            return // nothing to shift
-        }
-
         if let Some(next) = self.next {
             self.earliest = next; // drop earliest
             self.next = Some(next_next);
@@ -54,8 +50,6 @@ fn part1_run(number_count: usize, turn_count: i64, starting_numbers: &[i64]) -> 
 
     for sn in starting_numbers.iter().map(|v| *v as i64) {
         last_turn_spoken_map.insert(sn, PrevRun::new(turn));
-        // println!("T{:>3} -> {}", turn + 1, sn);
-
         turn += 1;
         last_spoken = sn;
     }
@@ -63,16 +57,11 @@ fn part1_run(number_count: usize, turn_count: i64, starting_numbers: &[i64]) -> 
     // what is the 2020th _number_ spoken
     while last_turn_spoken_map.len() != number_count && turn < turn_count {
         let to_speak = if let Some(prev) = last_turn_spoken_map.get(&last_spoken) {
-            // println!("T{:>3} -> prev={:?}", turn + 1, prev);
-
-            // it was previously spoken
             prev.next_spoken()
         }
         else {
             0
         };
-
-        // println!("T{:>3} -> last_spoken={}, speak={}", turn + 1, last_spoken, to_speak);
 
         last_turn_spoken_map.entry(to_speak)
             .and_modify(|e| (*e).shift_next(turn))
