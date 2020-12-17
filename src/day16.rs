@@ -1,7 +1,8 @@
 
+use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Rule {
     class: String,   
     ranges: Vec<RangeInclusive<u32>>,
@@ -25,6 +26,10 @@ impl Rule {
             class: class_name.to_owned(),
             ranges,
         }
+    }
+
+    fn is_valid_field(&self, value: &u32) -> bool {
+        is_in_ranges(&self.ranges, value)
     }
 }
 
@@ -159,9 +164,94 @@ pub fn solve_part1(notes: &Notes) -> u64 {
         .fold(0u64, |a, v| a + (*v as u64))
 }
 
+fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>>
+where
+    T: Clone,
+{
+    assert!(!v.is_empty());
+    (0..v[0].len())
+        .map(|i| v.iter().map(|inner| inner[i].clone()).collect::<Vec<T>>())
+        .collect()
+}
+
+#[aoc(day16, part2)]
+pub fn solve_part2(notes: &Notes) -> u64 {
+    let collapsed_ranges = collapse_ranges(&notes.rules);
+
+    let rules_n = notes.rules.len();
+    let rules_by_name = {
+        let mut map = HashMap::<&str, Rule>::with_capacity(rules_n);
+        for rule in &notes.rules {
+            map.insert(&rule.class, rule.clone());
+        }
+        map
+    };
+    let mut remaining_rules = notes.rules.iter().map(|r| &r.class[..]).collect::<Vec<_>>();
+
+    let mut rules_map = HashMap::<&str, usize>::with_capacity(rules_n);
+
+    // fields is now all the values in the tickets per column
+    let fields = transpose(
+        notes.tickets.iter()
+            .filter(|t| t.fields.iter().all(|f| is_in_ranges(&collapsed_ranges, f)))
+            .map(|t| t.fields.clone())
+            .collect::<Vec<_>>()
+    );
+
+    let mut remaining_fields = (0..fields.len()).collect::<Vec<usize>>();
+
+    while rules_map.len() != rules_n {
+        remaining_fields.retain(|field_idx| {
+            let current_fields = &fields[*field_idx];
+            
+            let matching_rules = remaining_rules.iter()
+                .enumerate()
+                .map(|(i, n)| (i, &rules_by_name[n]))
+                .filter(|(_, r)| current_fields.iter().all(|f| r.is_valid_field(f)))
+                .collect::<Vec<_>>();
+
+            if matching_rules.len() == 1 {
+                // found a single matching rule
+                let (r_idx, rule) = matching_rules[0];
+
+                rules_map.insert(&rule.class, *field_idx);
+                remaining_rules.remove(r_idx);
+
+                false
+            }
+            else {
+                // more than one or no matches => not the _right_ rule
+                true
+            }
+        });
+    }
+
+    rules_map.iter()
+        .filter_map(|(k, v)| if k.starts_with("departure") { Some(v) } else { None })
+        .map(|idx| notes.my_ticket.fields[*idx])
+        .fold(1u64, |a, v| a * (v as u64))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn day16_solve_part2_given() {
+        let notes = Notes::parse(
+                "departure class: 0-1 or 4-19\n\
+                departure row: 0-5 or 8-19\n\
+                seat: 0-13 or 16-19\n\
+                \n\
+                your ticket:\n\
+                11,12,13\n\
+                \n\
+                nearby tickets:\n\
+                3,9,18\n\
+                15,1,5\n\
+                5,14,9");
+        assert_eq!(11 * 12, solve_part2(&notes));
+    }
 
     #[test]
     fn solve_part1_given() {

@@ -60,13 +60,11 @@ fn find_first_matching_time(seed_time: u64, bus_notes: &BusNotes) -> u64 {
         vec.sort_unstable_by(|(_, a), (_, b)| b.cmp(a));
         vec
     };
-    println!("combinations_to_check = {:?}", combinations_to_check);
 
     let (window_offset, step) = combinations_to_check[0];
     let combinations_to_check = &combinations_to_check[1..];
     
     let mut time = step * (seed_time / step + 1);
-    println!("window_offset = {}, step = {}, time = {}", window_offset, step, time);
 
     loop {
         let check_time = time - window_offset;
